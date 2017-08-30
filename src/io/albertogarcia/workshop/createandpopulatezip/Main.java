@@ -1,10 +1,13 @@
 package io.albertogarcia.workshop.createandpopulatezip;
 
+import java.io.BufferedWriter;
+import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,9 +21,13 @@ public class Main {
         };
 
         try (FileSystem zipFs = openZip(Paths.get("myData.zip"))) {
-            System.out.println("Zip created at " + LocalDateTime.now().toString());
+            log("Zip created");
             copyToZip(zipFs, "file1.txt");
-            System.out.println("File copied to zip at " + LocalDateTime.now().toString());
+            log("File copied to zip");
+            writeToFileInZip1(zipFs, data);
+            log("(1) Wrote to file in zip");
+            writeToFileInZip2(zipFs, data);
+            log("(2) Wrote to file in zip");
         } catch (Exception e) {
             System.out.println("Exception: " + e.getClass().getSimpleName() + ", " + e.getMessage());
         }
@@ -44,10 +51,20 @@ public class Main {
     }
 
     public static void writeToFileInZip1 (FileSystem zipFs, String[] data) throws IOException {
-
+        try (BufferedWriter bw = Files.newBufferedWriter(zipFs.getPath("/newFile1.txt"))) {
+            for (String str:data) {
+                bw.write(str);
+                bw.newLine();
+            }
+        }
     }
 
     public static void writeToFileInZip2 (FileSystem zipFs, String[] data) throws IOException {
+        // New method for writing to a file from a List<T>.
+        Files.write(zipFs.getPath("/newFile2.txt"), Arrays.asList(data), Charset.defaultCharset(), StandardOpenOption.CREATE);
+    }
 
+    public static void log(String message) {
+        System.out.println(message + " at " + LocalDateTime.now().toString());
     }
 }
